@@ -16,5 +16,8 @@ func main() {
 	if err != nil {
 		logrus.Fatal("Couldn't process intcode ", err)
 	}
-	logrus.Info(inst)
+
+	if err := inst.Process(); err != nil {
+		logrus.Fatal(err)
+	}
 }
