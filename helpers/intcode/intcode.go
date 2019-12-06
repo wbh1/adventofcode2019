@@ -52,22 +52,18 @@ func (inst *Instructions) Process() error {
 		op := Operation{}
 
 		op.Modes, op.OpCode = parseInstruction((*inst)[opCodePos])
-		logrus.Infof("Opcode: %d; instruction: %d; modes: %v", op.OpCode, (*inst)[opCodePos], op.Modes)
 
 		switch op.OpCode {
 		case 1:
 			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1], (*inst)[opCodePos+2])
 			bah := *inst
-			logrus.Infof("Adding %d and %d; storing at %d in place of %d. Modes: %v", params[0], params[1], bah[opCodePos+3], bah[bah[opCodePos+3]], op.Modes)
 			(*inst)[(*inst)[opCodePos+3]] = params[0] + params[1]
 			opCodePos += InstructionLength[1]
 		case 2:
 			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1], (*inst)[opCodePos+2])
-			logrus.Infof("Multiplying %d and %d; storing at %d in place of %d. Modes: %v", params[0], params[1], (*inst)[opCodePos+3], (*inst)[(*inst)[opCodePos+3]], op.Modes)
 			(*inst)[(*inst)[opCodePos+3]] = params[0] * params[1]
 			opCodePos += InstructionLength[2]
 		case 3:
-			logrus.Infof("Storing %d at pos %d", input, (*inst)[opCodePos+1])
 			(*inst)[(*inst)[opCodePos+1]] = input
 			opCodePos += InstructionLength[3]
 		case 4:
@@ -88,9 +84,10 @@ func parseInstruction(inst int) (modes ParamModes, opCode int) {
 		logrus.Fatal(err)
 	}
 
+	// left pad the string with 0's
 	str = fmt.Sprintf("|%05s|", str)
+
 	for i := len(str)-3; i >= 0; i-- {
-		//logrus.Infof("i is %d. inst is %v", i, inst)
 		switch i {
 		case 3:
 			modes.Param1 = mode(str[i])
@@ -117,7 +114,6 @@ func mode(num uint8) int {
 }
 
 func (inst *Instructions) parseParams(modes ParamModes, params ...int) (ints []int) {
-	logrus.Info("params: ", params)
 	for i, p := range params {
 		switch i {
 		case 0:
