@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/wbh1/adventofcode2019/helpers/intcode"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -29,16 +30,24 @@ func main() {
 	}
 
 	numbers = part1(numbers)
-	logrus.Info(numbers[0])
+	numbers1, err := intcode.ReadInput(input)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Info(numbers1)
+	numbers1.Process()
+	logrus.Info(numbers[0], numbers1[0])
 
-	param1, param2 := part2(numbers)
-	logrus.Info(param1, param2)
+	//param1, param2 := part2(numbers)
+	//logrus.Info(param1, param2)
 }
 
 func compute(opcode, num1, num2 int) int {
 	if opcode == 1 {
+		logrus.Infof("Adding %d and %d", num1, num2)
 		return num1 + num2
 	} else if opcode == 2 {
+		logrus.Infof("Multiplying %d and %d", num1, num2)
 		return num1 * num2
 	} else {
 		logrus.Fatal(opcode, " is not a valid opcode")

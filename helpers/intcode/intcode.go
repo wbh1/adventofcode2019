@@ -1,15 +1,16 @@
 package intcode
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
 )
-var OpCodeParams = map[int]int{
-	1:  3,
-	2: 3,
-	3: 1,
-	4: 1,
+var InstructionLength = map[int]int{
+	1:  4,
+	2: 4,
+	3: 2,
+	4: 2,
 }
 
 type Instructions []int
@@ -45,39 +46,33 @@ func (inst *Instructions) Process() error {
 
 	input := 1
 
-	for {
-		var (
-			op Operation
-			i = (*inst)[opCodePos]
-		)
 
-		if i == 99 {
-			return nil
-		}
+	for opCodePos = 0; (*inst)[opCodePos] != 99; {
 
-		//logrus.Info(*inst)
-		op.Modes, op.OpCode = parseInstruction(i)
-		logrus.Info(op.Modes)
+		op := Operation{}
+
+		op.Modes, op.OpCode = parseInstruction((*inst)[opCodePos])
+		logrus.Infof("Opcode: %d; instruction: %d; modes: %v", op.OpCode, (*inst)[opCodePos], op.Modes)
 
 		switch op.OpCode {
 		case 1:
 			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1], (*inst)[opCodePos+2])
-			//logrus.Infof("Adding %d and %d; storing at %d in place of %d", params[0], params[1], opCodePos+3, (*inst)[opCodePos+3])
+			bah := *inst
+			logrus.Infof("Adding %d and %d; storing at %d in place of %d. Modes: %v", params[0], params[1], bah[opCodePos+3], bah[bah[opCodePos+3]], op.Modes)
 			(*inst)[(*inst)[opCodePos+3]] = params[0] + params[1]
-			opCodePos += 4
+			opCodePos += InstructionLength[1]
 		case 2:
 			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1], (*inst)[opCodePos+2])
-			//logrus.Infof("Multiplying %d and %d; storing at %d in place of %d", params[0], params[1], opCodePos+3, (*inst)[opCodePos+3])
+			logrus.Infof("Multiplying %d and %d; storing at %d in place of %d. Modes: %v", params[0], params[1], (*inst)[opCodePos+3], (*inst)[(*inst)[opCodePos+3]], op.Modes)
 			(*inst)[(*inst)[opCodePos+3]] = params[0] * params[1]
-			opCodePos += 4
+			opCodePos += InstructionLength[2]
 		case 3:
-			//logrus.Infof("Storing %d at pos %d", input, (*inst)[opCodePos+1])
+			logrus.Infof("Storing %d at pos %d", input, (*inst)[opCodePos+1])
 			(*inst)[(*inst)[opCodePos+1]] = input
-			opCodePos += 2
+			opCodePos += InstructionLength[3]
 		case 4:
-			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1])
-			logrus.Info((*inst)[params[0]])
-			opCodePos += 2
+			logrus.Info((*inst)[(*inst)[opCodePos+1]])
+			opCodePos += InstructionLength[4]
 		default:
 			logrus.Fatal("Idk what to do with this opcode: ", op.OpCode)
 		}
@@ -93,17 +88,16 @@ func parseInstruction(inst int) (modes ParamModes, opCode int) {
 		logrus.Fatal(err)
 	}
 
-	for i := len(str)-2; i >= 0; i-- {
+	str = fmt.Sprintf("|%05s|", str)
+	for i := len(str)-3; i >= 0; i-- {
+		//logrus.Infof("i is %d. inst is %v", i, inst)
 		switch i {
 		case 3:
-			logrus.Infof("Param3 = %d", int(str[0]))
-			modes.Param3 = int(str[0])
+			modes.Param1 = mode(str[i])
 		case 2:
-			logrus.Infof("Param2 = %d", int(str[1]))
-			modes.Param2 = int(str[1])
+			modes.Param2 = mode(str[i])
 		case 1:
-			logrus.Infof("Param1 = %d", int(str[2]))
-			modes.Param1 = mode(str[2])
+			modes.Param3 = mode(str[i])
 		}
 	}
 
@@ -123,25 +117,26 @@ func mode(num uint8) int {
 }
 
 func (inst *Instructions) parseParams(modes ParamModes, params ...int) (ints []int) {
+	logrus.Info("params: ", params)
 	for i, p := range params {
 		switch i {
 		case 0:
 			if modes.Param1 == 1 {
-				ints = append(ints, (*inst)[p])
-			} else {
 				ints = append(ints, p)
+			} else {
+				ints = append(ints, (*inst)[p])
 			}
 		case 1:
 			if modes.Param2 == 1 {
-				ints = append(ints, (*inst)[p])
-			} else {
 				ints = append(ints, p)
+			} else {
+				ints = append(ints, (*inst)[p])
 			}
 		case 2:
 			if modes.Param3 == 1 {
-				ints = append(ints, (*inst)[p])
-			} else {
 				ints = append(ints, p)
+			} else {
+				ints = append(ints, (*inst)[p])
 			}
 		}
 	}
