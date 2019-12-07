@@ -72,7 +72,8 @@ func (inst *Instructions) Process() error {
 			(*inst)[(*inst)[opCodePos+1]] = input
 			opCodePos += InstructionLength[3]
 		case 4:
-			logrus.Info((*inst)[(*inst)[opCodePos+1]])
+			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1])
+			logrus.Info(params[0])
 			opCodePos += InstructionLength[4]
 		default:
 			logrus.Fatal("Idk what to do with this opcode: ", op.OpCode)
