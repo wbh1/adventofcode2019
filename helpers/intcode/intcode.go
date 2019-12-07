@@ -6,26 +6,32 @@ import (
 	"strconv"
 	"strings"
 )
+
+// InstructionLength maps an opcode to the number of parameters it has
 var InstructionLength = map[int]int{
-	1:  4,
+	1: 4,
 	2: 4,
 	3: 2,
 	4: 2,
 }
 
+// Instructions is a bunch of intcode instructions
 type Instructions []int
 
+// Operation represents an OpCode along with the mdoes for its opcodes
 type Operation struct {
-	Modes ParamModes
+	Modes  ParamModes
 	OpCode int
 }
 
+// ParamModes represents the mode of each parameter to the OpCode
 type ParamModes struct {
 	Param1 int
 	Param2 int
 	Param3 int
 }
 
+// ReadInput from a file and return a set of Instructions
 func ReadInput(program []byte) (Instructions, error) {
 	var instructions Instructions
 	inst := strings.Split(string(program), ",")
@@ -41,11 +47,11 @@ func ReadInput(program []byte) (Instructions, error) {
 	return instructions, nil
 }
 
+// Process the set of instructions
 func (inst *Instructions) Process() error {
 	var opCodePos int
 
 	input := 1
-
 
 	for opCodePos = 0; (*inst)[opCodePos] != 99; {
 
@@ -56,7 +62,6 @@ func (inst *Instructions) Process() error {
 		switch op.OpCode {
 		case 1:
 			params := inst.parseParams(op.Modes, (*inst)[opCodePos+1], (*inst)[opCodePos+2])
-			bah := *inst
 			(*inst)[(*inst)[opCodePos+3]] = params[0] + params[1]
 			opCodePos += InstructionLength[1]
 		case 2:
@@ -87,7 +92,7 @@ func parseInstruction(inst int) (modes ParamModes, opCode int) {
 	// left pad the string with 0's
 	str = fmt.Sprintf("|%05s|", str)
 
-	for i := len(str)-3; i >= 0; i-- {
+	for i := len(str) - 3; i >= 0; i-- {
 		switch i {
 		case 3:
 			modes.Param1 = mode(str[i])
